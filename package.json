@@ -34,6 +34,7 @@
     "express": "^4.17.1",
     "jasmine": "^3.8.0",
     "jasmine-spec-reporter": "^7.0.0",
-    "save-dev": "0.0.1-security"
+    "save-dev": "0.0.1-security",
+    "sharp": "^0.28.3"
   }
 }
