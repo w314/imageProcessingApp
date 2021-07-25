@@ -1,10 +1,11 @@
 import express from 'express';
+import processor from '../utilities/imageProcessor'
 
 //create router object
 const sampleRoute = express.Router();
 
 //set up route
-sampleRoute.get('/', (req, res) => {
+sampleRoute.get('/', processor, (req, res) => {
   res.send('Application starting page');
 });
 
