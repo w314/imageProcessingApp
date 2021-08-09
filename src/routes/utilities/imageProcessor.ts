@@ -10,6 +10,10 @@ const processor = (req: express.Request, res: express.Response): void => {
 		root: path.join(__dirname, '../assets/thumbs/')
 	}
 	// return requested file if exist with the required dimensions
+	if(fileName == undefined) {
+		// throw Error('No file name given.');
+		res.send('Cannot process picture, no file parameter in url.');
+	}
 	res.sendFile(`${fileName}_${width}x${height}.jpg`, options, async (err) => {
 		if(err) {
 			console.log(`${fileName}.jpg with width: ${width} and height: ${height} doesn't exists.`);
