@@ -22,6 +22,7 @@ const processor = (req: express.Request, res: express.Response): void => {
 	if(fileName == undefined) {
 		// throw Error('No file name given.');
 		res.send('Cannot process picture, no file parameter in url.');
+		return;
 	}
 
 	// if no with and height parameters are present return original picture
