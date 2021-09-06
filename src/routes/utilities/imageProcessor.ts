@@ -4,10 +4,11 @@ import { promises as fs } from 'fs';
 import { exit } from 'process';
 import sharp from 'sharp';
 
-const processor = (req: express.Request, res: express.Response): void => {
+const processor = async (req: express.Request, res: express.Response): Promise<void> => {
 	const fileName = req.query.file;
 	const width = req.query.width;
 	const height = req.query.height;
+	const imageDir: string = '../assets/images/';
 	const outputFile: string = `./src/routes/assets/thumbs/${fileName}_${width}x${height}.jpg`;
 	const optionsThumbs = {
 		root: path.join(__dirname, '../assets/thumbs/')
@@ -20,10 +21,48 @@ const processor = (req: express.Request, res: express.Response): void => {
 	
 	//if no file parameter recevied in url send error message
 	if(fileName == undefined) {
-		// throw Error('No file name given.');
-		res.send('Cannot process picture, no file parameter in url.');
+		res.send('Cannot process request, no file parameter in url.');
 		return;
 	}
+
+	//if there is a file parameter, check if such an image exists
+	// const image = (async () => {
+	// 	try {
+	// 		console.log(`Cheking if ${fileName}.jpg exists.`);
+	// 		const imageFile = await fs.stat(path.resolve(__dirname, imageDir, `${fileName}.jpg`))
+	// 		return imageFile;
+	// 	}
+	// 	// if such image does not exists send error message
+	// 	catch (err) {
+	// 		res.send(`Cannot process request, image ${fileName}.jpg does not exist.`)
+	// 		// console.log(`${fileName} image doesn't exist`)
+	// 		// return (undefined);
+	// 		return undefined;
+	// 	}
+	// })();
+	try {
+		const image = await fs.stat(path.resolve(__dirname, imageDir, `${fileName}.jpg`));
+		console.log(image);
+	}
+	catch (err) {
+		res.send(`Cannot process request, image ${fileName}.jpg does not exist.`)
+		console.log('image not found');
+		return;
+	}
+	
+
+
+	// image()
+	// 	.then( (result) =>  {
+	// 		console.log('result from teh promis is:')
+	// 		console.log(result);
+	// 	})
+	// console.log(image());
+
+
+	// console.log('image is: ')
+	// console.log(image);
+
 
 	// if no with and height parameters are present return original picture
 	if(width == undefined && height == undefined) {
