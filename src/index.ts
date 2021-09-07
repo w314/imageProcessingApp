@@ -11,7 +11,7 @@ app.use('/api', routes);
 
 //start the server
 app.listen(port, () => {
-  console.log(`Server started at http://localhost:${port}/api/sampleRoute`);
+  console.log(`Server started at http://localhost:${port}/api/images`);
 });
 
 export default app;

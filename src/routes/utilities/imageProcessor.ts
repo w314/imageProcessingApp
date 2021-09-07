@@ -21,19 +21,21 @@ const processor = async (req: express.Request, res: express.Response): Promise<v
 	
 	//if no file parameter recevied in url return with 400
 	if(fileName == undefined) {
-		res.status(400).send('Cannot process request, no file parameter in url.');
+		const message = 'Cannot process request, no file parameter in url.';
+		res.status(400).send(message);
+		console.log(message);
 		return;
 	}
 
 	// check if file name given in file parameter is a valid image
 	try {
 		const image = await fs.stat(path.resolve(__dirname, imageDir, `${fileName}.jpg`));
-		console.log(image);
 	}
 	// if file name is invalid return with status 400
 	catch (err) {
-		res.status(400).send(`Cannot process request, image ${fileName}.jpg does not exist.`)
-		console.log('image not found');
+		const message = `Cannot process request, image ${fileName}.jpg does not exist.`;
+		res.status(400).send(message);
+		console.log(message);
 		return;
 	}
 
