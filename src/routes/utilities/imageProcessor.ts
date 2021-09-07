@@ -19,52 +19,25 @@ const processor = async (req: express.Request, res: express.Response): Promise<v
 	
 	console.log(`\n${fileName}.jpg ${width} x ${height} is requested`);
 	
-	//if no file parameter recevied in url send error message
+	//if no file parameter recevied in url return with 400
 	if(fileName == undefined) {
-		res.send('Cannot process request, no file parameter in url.');
+		res.status(400).send('Cannot process request, no file parameter in url.');
 		return;
 	}
 
-	//if there is a file parameter, check if such an image exists
-	// const image = (async () => {
-	// 	try {
-	// 		console.log(`Cheking if ${fileName}.jpg exists.`);
-	// 		const imageFile = await fs.stat(path.resolve(__dirname, imageDir, `${fileName}.jpg`))
-	// 		return imageFile;
-	// 	}
-	// 	// if such image does not exists send error message
-	// 	catch (err) {
-	// 		res.send(`Cannot process request, image ${fileName}.jpg does not exist.`)
-	// 		// console.log(`${fileName} image doesn't exist`)
-	// 		// return (undefined);
-	// 		return undefined;
-	// 	}
-	// })();
+	// check if file name given in file parameter is a valid image
 	try {
 		const image = await fs.stat(path.resolve(__dirname, imageDir, `${fileName}.jpg`));
 		console.log(image);
 	}
+	// if file name is invalid return with status 400
 	catch (err) {
-		res.send(`Cannot process request, image ${fileName}.jpg does not exist.`)
+		res.status(400).send(`Cannot process request, image ${fileName}.jpg does not exist.`)
 		console.log('image not found');
 		return;
 	}
-	
 
-
-	// image()
-	// 	.then( (result) =>  {
-	// 		console.log('result from teh promis is:')
-	// 		console.log(result);
-	// 	})
-	// console.log(image());
-
-
-	// console.log('image is: ')
-	// console.log(image);
-
-
-	// if no with and height parameters are present return original picture
+	// if there neither width nor height parameters are given return original image
 	if(width == undefined && height == undefined) {
 		console.log(`No width and height parameters are given, returning original ${fileName}.jpg`);
 		res.sendFile(`${fileName}.jpg`, optionsImages, async (err) => {
@@ -74,6 +47,8 @@ const processor = async (req: express.Request, res: express.Response): Promise<v
 		})
 		return;
 	}
+
+	console.log('after original file return');
 
 	
 	// return requested file if exist with the required dimensions
