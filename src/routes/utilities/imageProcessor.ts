@@ -8,6 +8,7 @@ const processor = async (req: express.Request, res: express.Response): Promise<v
 	const fileName = req.query.file;
 	const width = req.query.width;
 	const height = req.query.height;
+	const imageFile = `${fileName}_${width}x${height}.jpg`;
 	const imageDir: string = '../assets/images/';
 	const outputFile: string = `./src/routes/assets/thumbs/${fileName}_${width}x${height}.jpg`;
 	const optionsThumbs = {
@@ -17,7 +18,7 @@ const processor = async (req: express.Request, res: express.Response): Promise<v
 		root: path.join(__dirname, '../assets/images/')
 	}
 	
-	console.log(`\n${fileName}.jpg ${width} x ${height} is requested`);
+	console.log(`\n${imageFile} is requested`);
 	
 	//if no file parameter recevied in url return with 400
 	if(fileName == undefined) {
@@ -41,71 +42,51 @@ const processor = async (req: express.Request, res: express.Response): Promise<v
 
 	// if there neither width nor height parameters are given return original image
 	if(width == undefined && height == undefined) {
-		console.log(`No width and height parameters are given, returning original ${fileName}.jpg`);
-		res.sendFile(`${fileName}.jpg`, optionsImages, async (err) => {
+		const message = `No width and height parameters are given, returning original assets/images/${fileName}.jpg`;
+		console.log(message);
+		res.status(200).sendFile(`${fileName}.jpg`, optionsImages, async (err) => {
 			if (err) {
+				console.log('error while sending original image');
 				console.log(err);
 			}
 		})
 		return;
 	}
-
-	console.log('after original file return');
-
 	
 	// return requested file if exist with the required dimensions
-	res.sendFile(`${fileName}_${width}x${height}.jpg`, optionsThumbs, async (err) => {
+	res.sendFile(imageFile, optionsThumbs, async (err) => {
+		// if image thumb is missing create and send new image thumb
 		if(err) {
 			console.log(`${fileName}.jpg with width: ${width} and height: ${height} doesn't exists.`);
-			// check if file requested exist under images folder
 			try {
-				await fs.access(path.resolve(__dirname, '../assets/images/',`${fileName}.jpg`));
-				console.log(`File name ${fileName}.jpg available to resize.`);
-				try {
-					// const originalFile = 
-					console.log('resizing image...');
-					// const image = sharp(path.resolve(__dirname, '../assets/images/', `${fileName}.jpg`));
-					// image
-					// 	.metadata()
-					// 	.then(metadata => {
-					// 		console.log(metadata);
-					// 	})
-					const image = sharp(path.resolve(__dirname, '../assets/images/', `${fileName}.jpg`))
-					image
-						// .metadata()
-						// 	.then(metadata => {
-						// 		console.log(metadata);
-						// 	})
-						.resize(parseInt(width as string, 10), parseInt(height as string, 10), {
-							fit: 'cover'
-						})
-						// .toBuffer()
-						// .then(data => {
-						// 	res.send(data);
-						// })				
-						// .toFile('output.jpg')
-						.toFile(outputFile)		
-						// .toFile(outputFile, (err, info) => {
-						// 	console.log('in toFile');
-						// 	console.log(err);
-						// 	console.log(info);
-						// })
-				}
-				catch  (err) {
-					console.log(err);
-				}
-
+				console.log('resizing image...');
+				// resizing image
+				const image =  sharp(path.resolve(__dirname, '../assets/images/', `${fileName}.jpg`))
+				await image
+				.resize(parseInt(width as string, 10), parseInt(height as string, 10), {
+					fit: 'cover'
+				})
+				// stroing resized image
+				.toFile(outputFile)		
+				//returning resized image
+				res.status(200).sendFile(imageFile, optionsThumbs, async (err) => {
+					if(err) {
+						console.log('error while sending resized image')
+						console.log(err)
+					}
+					else {
+						console.log(`Created, stored and returned ${imageFile}`)
+					}
+				})
 			}
-			catch (err) {
-				// console.log(err);
-				console.log(`There is no such file as ${fileName}`);
-				// create image with required dimensions
+			catch  (err) {
+				console.log(err);
 			}
 		}
 		else {
-			console.log(`Returning ${fileName}.jpg, width: ${width}, height: ${height}`);
+			console.log(`${imageFile} already exists, returning existing file.`)
 		}
-	})
+	});
 }
 
 export default processor;
