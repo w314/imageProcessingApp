@@ -9,13 +9,18 @@ const processor = async (req: express.Request, res: express.Response): Promise<v
 	const width = req.query.width;
 	const height = req.query.height;
 	const imageFile = `${fileName}_${width}x${height}.jpg`;
-	const imageDir: string = '../assets/images/';
-	const outputFile: string = `./src/routes/assets/thumbs/${fileName}_${width}x${height}.jpg`;
+	const assetsDir:string = path.join('..', 'assets');
+	// console.log(assetsDir);
+	const imageDir: string = path.join(`${assetsDir}`, `images`);
+	// console.log(imageDir);
+	const thumbsDir: string = path.join(`${assetsDir}`, `thumbs`);
+	// const outputFile: string = `./src/routes/assets/thumbs/${fileName}_${width}x${height}.jpg`;
+	const outputFile: string = path.join('.', 'src', 'routes', 'assets', 'thumbs',`${imageFile}`);
 	const optionsThumbs = {
-		root: path.join(__dirname, '../assets/thumbs/')
+		root: path.join(__dirname, thumbsDir)
 	}
 	const optionsImages = {
-		root: path.join(__dirname, '../assets/images/')
+		root: path.join(__dirname, imageDir)
 	}
 	
 	console.log(`\n${imageFile} is requested`);
