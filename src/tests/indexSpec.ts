@@ -1,10 +1,36 @@
 import { agent as request } from 'supertest';
 import app from '../index';
+import fs from 'fs';
+import path from 'path'
 
 
 const invalidFileName: string = 'invalidImage.jpg'
 const width: string = '600';
 const height: string = '400';
+const testFile = path.join('..', '..', 'assets', 'thumbs', 'fjord_400x600.jpg');
+
+beforeAll( () => {
+  //delete testFile
+  try {
+    console.log(`\n\nBefore tests deleting testfile: ${testFile}`)
+    fs.unlinkSync(testFile);
+    console.log(`Succes, testfile is deleted.`)
+  }
+  catch (err) {
+    // console.log()
+    const errorMessage = (err as Error).message
+    if(errorMessage.startsWith('ENOENT')) {
+      console.log(`Succes, tesfile was already missing from directory.`);
+    }
+    else {
+      console.log(errorMessage);
+    }
+      
+
+    
+    // console.log(errno)
+  }
+});
 
 
 // tests api/images endpoint with no file parameter
