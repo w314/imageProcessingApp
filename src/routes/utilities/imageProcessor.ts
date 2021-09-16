@@ -5,6 +5,8 @@ import { exit } from 'process';
 import sharp from 'sharp';
 
 const processor = async (req: express.Request, res: express.Response): Promise<void> => {
+	// console.log(`\n\nRequested URL`)
+	// console.log(req.originalUrl);
 	const fileName = req.query.file;
 	const width = req.query.width;
 	const height = req.query.height;
@@ -77,6 +79,7 @@ const processor = async (req: express.Request, res: express.Response): Promise<v
 						console.log(err)
 					}
 					else {
+						// console.log(res)
 						console.log(`Created, stored and returned ${imageFile}`)
 					}
 				})
