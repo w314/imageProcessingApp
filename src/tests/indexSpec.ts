@@ -10,6 +10,9 @@ const width: string = '600';
 const height: string = '400';
 const thumbsDir: string = path.join('.', 'assets', 'thumbs');
 const testFile = path.join(`${thumbsDir}`, `${image}_${width}x${height}.jpg`);
+const optionsThumbs = {
+  root: path.join(__dirname, thumbsDir)
+}
 
 beforeAll( () => {
   //delete testFile
@@ -23,7 +26,7 @@ beforeAll( () => {
     // console.log()
     const errorMessage = (err as Error).message
     if(errorMessage.startsWith('ENOENT')) {
-      console.log(err)
+      // console.log(err)
       console.log(`OK, tesfile was already missing from directory.`);
     }
     else {
@@ -79,15 +82,22 @@ describe('Checking endpoint', () => {
       });
   })
   // tests creating requested image
-  it('creates requested image with requested width and height', async (done) => {
+  it('creates requested image with requested width and height', async () => {
     await request(app)
       // .get(`/api/image?file=${image}&width=${width}&height=${height}`)
       .get('/api/images?file=fjord&width=600&height=400')
       .expect(200)
       .expect('Content-Length', '41523')
-      // .end((err,res) => {
+      // check if file is saved under thumbs
+  //     .finally(() => {
+  //     //   try {
+  //         const imageCreated = fs.stat(testFile, () => {
 
-      // })
+  //         });
+  //         // console.log(imageCreated);
+  //       // }
+
+  //     })
 
   })
 });
