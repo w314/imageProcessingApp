@@ -33,16 +33,6 @@ const processor = async (req: express.Request, res: express.Response): Promise<v
 	}
 
 	// check if file name given in file parameter is a valid image
-	// try {
-	// 	const image = await fs.stat(path.resolve(__dirname, imageDir, `${fileName}.jpg`));
-	// }
-	// // if file name is invalid return with status 400
-	// catch (err) {
-	// 	const message = `Cannot process request, image ${fileName}.jpg does not exist.`;
-	// 	res.status(400).send(message);
-	// 	console.log(message);
-	// 	return;
-	// }
 	try {
 		await fs.access(path.resolve(__dirname, imageDir, `${fileName}.jpg` ))
 	}
@@ -91,6 +81,9 @@ const processor = async (req: express.Request, res: express.Response): Promise<v
 					else {
 						// console.log(res)
 						console.log(`Created, stored and returned ${imageFile}`)
+						// deleting stored file for testing purposes
+						// await fs.unlink(outputFile);
+
 					}
 				})
 			}

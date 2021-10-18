@@ -1,25 +1,28 @@
 import { agent as request } from 'supertest';
 import app from '../index';
-import fs from 'fs';
+import { promises as fs } from 'fs';
 import path from 'path'
+import { doesNotMatch, doesNotReject, rejects } from 'assert';
+import { resolve } from 'path/posix';
 
 
 const invalidFileName: string = 'invalidImage.jpg'
 const image: string = 'fjord';
 const width: string = '600';
 const height: string = '400';
+const thumbFile: string = `${image}_${width}x${height}`;
 const thumbsDir: string = path.join('.', 'assets', 'thumbs');
 const testFile = path.join(`${thumbsDir}`, `${image}_${width}x${height}.jpg`);
 const optionsThumbs = {
   root: path.join(__dirname, thumbsDir)
 }
 
-beforeAll( () => {
+beforeAll( async () => {
   //delete testFile
   try {
     console.log('\n\nBEFORE ALL')
     console.log(`Deleting testfile: ${testFile}`)
-    fs.unlinkSync(testFile);
+    await fs.unlink(testFile);
     console.log(`OK, testfile is deleted.`)
   }
   catch (err) {
@@ -82,23 +85,24 @@ describe('Checking endpoint', () => {
       });
   })
   // tests creating requested image
-  it('creates requested image with requested width and height', async () => {
+  it('creates requested image with requested width and height', async (done) => {
     await request(app)
       // .get(`/api/image?file=${image}&width=${width}&height=${height}`)
       .get('/api/images?file=fjord&width=600&height=400')
       .expect(200)
       .expect('Content-Length', '41523')
       // check if file is saved under thumbs
-  //     .finally(() => {
-  //     //   try {
-  //         const imageCreated = fs.stat(testFile, () => {
-
-  //         });
-  //         // console.log(imageCreated);
-  //       // }
-
-  //     })
-
+      .then( async () => {
+        console.log(`TEST: Checking if created ${thumbFile} is saved in thumbs directory`)
+        try {
+          const fileAccess =  await fs.access(testFile)
+          console.log(`TEST: File is saved`)
+          done()
+        }
+        catch(err) {
+          // rejects(new Error(`File not created, err: ${err}`))
+          done.fail('TEST: Created file is not saved under thumbs directory');
+        }
   })
 });
-
+})
