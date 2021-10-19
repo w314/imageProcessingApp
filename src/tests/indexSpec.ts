@@ -2,48 +2,18 @@ import { agent as request } from 'supertest';
 import app from '../index';
 import { promises as fs } from 'fs';
 import path from 'path'
-import { doesNotMatch, doesNotReject, rejects } from 'assert';
-import { resolve } from 'path/posix';
+// import { doesNotMatch, doesNotReject, rejects } from 'assert';
+// import { resolve } from 'path/posix';
 
 
 // const thumbFile: string = `${image}_${width}x${height}`;
 const thumbsDir: string = path.join('.', 'assets', 'thumbs');
-const invalidFileName: string = 'invalidImage.jpg'
-const existingThumbName: string = 'palmtunnel_300x200.jpg'
-const existingThumbName1: string = 'palmtunnel_400x200.jpg'
-const existingThumbPath: string = path.join(`${thumbsDir}`, `${existingThumbName}`);
-const existingThumbPath1: string = path.join(`${thumbsDir}`, `${existingThumbName1}`);
 const image: string = 'fjord';
 const width: string = '600';
 const height: string = '400';
-const testFile = path.join(`${thumbsDir}`, `${image}_${width}x${height}.jpg`);
-const optionsThumbs = {
-  root: path.join(__dirname, thumbsDir)
-}
-const originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
-
-beforeAll( async () => {
-  
-  //delete testFile
-  try {
-    console.log('\n\nBEFORE ALL')
-    console.log(`Deleting testfile: ${testFile}`)
-    await fs.unlink(testFile);
-    console.log(`OK, testfile is deleted.`)
-  }
-  catch (err) {
-    // console.log()
-    const errorMessage = (err as Error).message
-    if(errorMessage.startsWith('ENOENT')) {
-      // console.log(err)
-      console.log(`OK, tesfile was already missing from directory.`);
-    }
-    else {
-      console.log(err);
-    }
-  }
-});
-
+// const optionsThumbs = {
+//   root: path.join(__dirname, thumbsDir)
+// }
 
 // tests api/images endpoint with no file parameter
 describe('Checking API/images endpoint', () => {
@@ -77,6 +47,7 @@ describe('Checking API/images endpoint', () => {
         Error ? done.fail(Error) : done();
       });
   });
+
   // tests api/images to send original image file if no width and no height parameters are given
   it('sends original image file if no width and no height parameters are given in url', (done) => {
     request(app)
@@ -90,26 +61,56 @@ describe('Checking API/images endpoint', () => {
         }
       });
   })
+
   // tests creating requested new image
   it('creates requested image with requested width and height', async (done) => {
+
+    const testFile = path.join(`${thumbsDir}`, `${image}_${width}x${height}.jpg`);
+
+    // set-up delete testFile if necessary
+    try {
+      console.log(`\nTEST: Set-Up: Deleting ${testFile} if exists.`)
+      await fs.unlink(testFile);
+      console.log(`TEST: OK, ${testFile} is deleted.`)
+    }
+    catch (err) {
+      // console.log()
+      const errorMessage = (err as Error).message
+      if(errorMessage.startsWith('ENOENT')) {
+        // console.log(err)
+        console.log(`TEST: OK, tesfile was already missing from directory.`);
+      }
+      else {
+        console.log(`TEST: ${err}`);
+      }
+    }
+
     await request(app)
       // .get(`/api/image?file=${image}&width=${width}&height=${height}`)
       .get('/api/images?file=fjord&width=600&height=400')
       .expect(200)
       .expect('Content-Length', '41523')
     
-    console.log(`TEST: checking if file was saved`)
     await expectAsync(fs.stat(testFile)).toBeResolved();   
+    console.log(`TEST: Checked, that requested file was saved as ${testFile}`)
 
-    
+    // clean-up: delete created testFile
+    await fs.unlink(testFile);
+    console.log(`TEST: ${testFile} was deleted to clean up.`)
+
     done() 
     })
 
   // test requesting already created thumb image    
   it('serves image from under thumbs directory if it exists', async () => {
+
+    const existingThumbName: string = 'palmtunnel_300x200.jpg'
+    const existingThumbPath: string = path.join(`${thumbsDir}`, `${existingThumbName}`);
+
+
     // check if file to be requested already exists
     await expectAsync(fs.stat(existingThumbPath)).toBeResolved()
-    console.log(`TEST: file to be requested already exists under thumbs directory`)
+    console.log(`\nTEST: file to be requested already exists under thumbs directory`)
 
     // count number of files under thumbs directory before making request
     const startingFileNumber = await fs.readdir.length
