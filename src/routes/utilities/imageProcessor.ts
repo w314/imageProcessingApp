@@ -47,11 +47,11 @@ const processor = async (req: express.Request, res: express.Response): Promise<v
 	// if there neither width nor height parameters are given return original image
 	if(width == undefined && height == undefined) {
 		const message = `No width and height parameters are given, returning original assets/images/${fileName}.jpg`;
-		console.log(message);
+		console.log(`SERVER LOG: ${message}`);
 		res.status(200).sendFile(`${fileName}.jpg`, optionsImages, async (err) => {
 			if (err) {
-				console.log('error while sending original image');
-				console.log(err);
+				console.log('SERVER LOG: error while sending original image');
+				console.log(`SERVER LOG: ${err}`);
 			}
 		})
 		return;
@@ -61,9 +61,9 @@ const processor = async (req: express.Request, res: express.Response): Promise<v
 	res.sendFile(imageFile, optionsThumbs, async (err) => {
 		// if image thumb is missing create and send new image thumb
 		if(err) {
-			console.log(`${fileName}.jpg with width: ${width} and height: ${height} doesn't exists.`);
+			console.log(`SERVER LOG: ${fileName}.jpg with width: ${width} and height: ${height} doesn't exists.`);
 			try {
-				console.log('resizing image...');
+				console.log('SERVER LOG: resizing image...');
 				// resizing image
 				const image =  sharp(path.resolve(__dirname, `${imageDir}`, `${fileName}.jpg`))
 				await image
@@ -75,12 +75,12 @@ const processor = async (req: express.Request, res: express.Response): Promise<v
 				//returning resized image
 				res.status(200).sendFile(imageFile, optionsThumbs, async (err) => {
 					if(err) {
-						console.log('error while sending resized image')
-						console.log(err)
+						console.log('SERVER LOG: error while sending resized image')
+						console.log(`SERVER LOG: ${err}`)
 					}
 					else {
 						// console.log(res)
-						console.log(`Created, stored and returned ${imageFile}`)
+						console.log(`SERVER LOG: Created, stored and returned ${imageFile}`)
 						// deleting stored file for testing purposes
 						// await fs.unlink(outputFile);
 
@@ -88,11 +88,11 @@ const processor = async (req: express.Request, res: express.Response): Promise<v
 				})
 			}
 			catch  (err) {
-				console.log(err);
+				console.log(`SERVER LOG: ${err}`);
 			}
 		}
 		else {
-			console.log(`${imageFile} already exists, returning existing file.`)
+			console.log(`SERVER LOG: ${imageFile} already exists, returning existing file.`)
 		}
 	});
 }

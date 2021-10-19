@@ -82,9 +82,6 @@ describe('Checking API/images endpoint', () => {
     request(app)
       .get('/api/images?file=fjord')
       .expect(200)
-      // .catch(Error => {
-      //   Error ? done.fail(Error) : done();
-      // })
       .end(function(err, res) {
         if (err) {
           done.fail(err);
@@ -100,20 +97,14 @@ describe('Checking API/images endpoint', () => {
       .get('/api/images?file=fjord&width=600&height=400')
       .expect(200)
       .expect('Content-Length', '41523')
-      // check if file is saved under thumbs
-      .then( async () => {
-        console.log(`TEST: Checking if created fjord_600x400.jpg is saved in thumbs directory`)
-        try {
-          const fileAccess =  await fs.access(testFile)
-          console.log(`TEST: File is saved`)
-          done()
-        }
-        catch(err) {
-          // rejects(new Error(`File not created, err: ${err}`))
-          done.fail('TEST: Created file is not saved under thumbs directory');
-        }
-      })
-  })  
+    
+    console.log(`TEST: checking if file was saved`)
+    await expectAsync(fs.stat(testFile)).toBeResolved();   
+
+    
+    done() 
+    })
+
   // test requesting already created thumb image    
   it('serves image from under thumbs directory if it exists', async () => {
     // check if file to be requested already exists
@@ -125,12 +116,12 @@ describe('Checking API/images endpoint', () => {
     console.log(`TEST: number of files under thumbs folder before request: ${startingFileNumber}`)
     
     //request image
-    request(app)
+    await request(app)
       .get('/api/images?file=palmtunnel&width=300&height=200')
       .expect(200)
 
     // check that no new files were created during request
-    const currentFileNumber = fs.readdir.length
+    const currentFileNumber = await fs.readdir.length
     console.log(`TEST: Number of files under thumbs folder after request: ${currentFileNumber}`)
     expect(currentFileNumber).toEqual(startingFileNumber)
     console.log(`TEST: No new file were saved under thumbs folder`)    
