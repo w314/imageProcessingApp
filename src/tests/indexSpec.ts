@@ -6,18 +6,24 @@ import { doesNotMatch, doesNotReject, rejects } from 'assert';
 import { resolve } from 'path/posix';
 
 
+// const thumbFile: string = `${image}_${width}x${height}`;
+const thumbsDir: string = path.join('.', 'assets', 'thumbs');
 const invalidFileName: string = 'invalidImage.jpg'
+const existingThumbName: string = 'palmtunnel_300x200.jpg'
+const existingThumbName1: string = 'palmtunnel_400x200.jpg'
+const existingThumbPath: string = path.join(`${thumbsDir}`, `${existingThumbName}`);
+const existingThumbPath1: string = path.join(`${thumbsDir}`, `${existingThumbName1}`);
 const image: string = 'fjord';
 const width: string = '600';
 const height: string = '400';
-const thumbFile: string = `${image}_${width}x${height}`;
-const thumbsDir: string = path.join('.', 'assets', 'thumbs');
 const testFile = path.join(`${thumbsDir}`, `${image}_${width}x${height}.jpg`);
 const optionsThumbs = {
   root: path.join(__dirname, thumbsDir)
 }
+const originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
 
 beforeAll( async () => {
+  
   //delete testFile
   try {
     console.log('\n\nBEFORE ALL')
@@ -38,6 +44,13 @@ beforeAll( async () => {
   }
 });
 
+// beforeEach(() => {
+//   jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+// })
+
+// afterEach(() => {
+//   jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
+// })
 
 // tests api/images endpoint with no file parameter
 describe('Checking endpoint', () => {
@@ -84,7 +97,7 @@ describe('Checking endpoint', () => {
         }
       });
   })
-  // tests creating requested image
+  // tests creating requested new image
   it('creates requested image with requested width and height', async (done) => {
     await request(app)
       // .get(`/api/image?file=${image}&width=${width}&height=${height}`)
@@ -93,7 +106,7 @@ describe('Checking endpoint', () => {
       .expect('Content-Length', '41523')
       // check if file is saved under thumbs
       .then( async () => {
-        console.log(`TEST: Checking if created ${thumbFile} is saved in thumbs directory`)
+        console.log(`TEST: Checking if created fjord_600x400.jpg is saved in thumbs directory`)
         try {
           const fileAccess =  await fs.access(testFile)
           console.log(`TEST: File is saved`)
@@ -103,6 +116,27 @@ describe('Checking endpoint', () => {
           // rejects(new Error(`File not created, err: ${err}`))
           done.fail('TEST: Created file is not saved under thumbs directory');
         }
-  })
-});
+      })
+  })  
+  // test requesting already created thumb image    
+  it('serves image from under thumbs directory if it exists', async () => {
+    // check if file to be requested already exists
+    await expectAsync(fs.stat(existingThumbPath)).toBeResolved()
+    console.log(`TEST: file to be requested already exists under thumbs directory`)
+
+    // count number of files under thumbs directory before making request
+    const startingFileNumber = await fs.readdir.length
+    console.log(`TEST: number of files under thumbs folder before request: ${startingFileNumber}`)
+    
+    //request image
+    request(app)
+      .get('/api/images?file=palmtunnel&width=300&height=200')
+      .expect(200)
+
+    // check that no new files were created during request
+    const currentFileNumber = fs.readdir.length
+    console.log(`TEST: Number of files under thumbs folder after request: ${currentFileNumber}`)
+    expect(currentFileNumber).toEqual(startingFileNumber)
+    console.log(`TEST: No new file were saved under thumbs folder`)    
+    })
 })
