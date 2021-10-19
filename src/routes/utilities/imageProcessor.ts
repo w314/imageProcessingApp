@@ -22,13 +22,13 @@ const processor = async (req: express.Request, res: express.Response): Promise<v
 		root: path.join(__dirname, imageDir)
 	}
 	
-	console.log(`\n${imageFile} is requested`);
+	console.log(`\nSERVER LOG: ${imageFile} is requested`);
 	
 	//if no file parameter recevied in url return with 400
 	if(fileName == undefined) {
 		const message = 'Cannot process request, no file parameter in url.';
 		res.status(400).send(message);
-		console.log(message);
+		console.log(`SERVER LOG: ${message}`);
 		return;
 	}
 
@@ -38,8 +38,8 @@ const processor = async (req: express.Request, res: express.Response): Promise<v
 	}
 	catch (err) {
 		const message = `Cannot process request, image ${fileName}.jpg does not exist.`;
-		res.status(400).send(message);
-		console.log(message);
+		res.status(404).send(message);
+		console.log(`SERVER LOG: ${message}`);
 		return;
 	}
 

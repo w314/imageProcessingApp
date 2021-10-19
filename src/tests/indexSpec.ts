@@ -44,16 +44,9 @@ beforeAll( async () => {
   }
 });
 
-// beforeEach(() => {
-//   jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-// })
-
-// afterEach(() => {
-//   jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
-// })
 
 // tests api/images endpoint with no file parameter
-describe('Checking endpoint', () => {
+describe('Checking API/images endpoint', () => {
   it('handles missing file parameter', (done) => {
     request(app)
       .get('/api/images?width=600&height=400')
@@ -69,12 +62,15 @@ describe('Checking endpoint', () => {
   });
   // tests api/images endpoint with invalid file parameter
   it('handles invalid file name', (done) => {
+
+    const fileName: string = 'nonexistentImage';
+
     request(app)
       .get(`/api/images?file=nonexistentImage`)
-      .expect(400)
+      .expect(404)
       .expect('Content-Type', 'text/html; charset=utf-8')
       .then(response => {
-        expect(response.text).toBe('Cannot process request, image nonexistentImage.jpg does not exist.');
+        expect(response.text).toBe(`Cannot process request, image ${fileName}.jpg does not exist.`);
         done();
       })
       .catch(Error => {
