@@ -9,6 +9,15 @@ const isPositiveInteger = (numString: string) => {
 	return String(num) === numString && num > 0;
 }
 
+const fileExists = (directory: string, file: string) => {
+	const filePath = path.join('.', 'assets', directory, file)
+	return new Promise(async (resolve, reject) => {
+		await fs.stat(filePath)
+		.then((response) => { resolve(true) })
+		.catch((err) => { reject()})
+	})
+}
+
 const processor = async (req: express.Request, res: express.Response): Promise<void> => {
 	const fileName = req.query.file;
 	const width = req.query.width;
@@ -35,6 +44,22 @@ const processor = async (req: express.Request, res: express.Response): Promise<v
 		console.log(`SERVER LOG: ${message}`);
 		return;
 	}
+
+	// // if there is no width of height return original image
+	// if(width == undefined && height == undefined) {
+	// 	const message = `No width and height parameters are given, returning original assets/images/${fileName}.jpg`;
+	// 	console.log(`SERVER LOG: ${message}`);
+	// 	res.status(200).sendFile(`${fileName}.jpg`, optionsImages, async (err) => {
+	// 		if (err) {
+	// 			console.log('SERVER LOG: error while sending original image');
+	// 			console.log(`SERVER LOG: ${err}`);
+	// 		}
+	// 	})
+	// 	return;
+	// }
+
+
+
 	// width and height should be undefined or positive integers	
 	if(width != undefined && !isPositiveInteger(width as string)) {
 		const message = 'Cannot process request, width has to be a positive integer'
@@ -74,9 +99,11 @@ const processor = async (req: express.Request, res: express.Response): Promise<v
 	}
 	
 	// check if requested image exists
-	await fs.stat(path.join('.','assets','thumbs',`${imageFile}`))
+	// await fs.stat(path.join('.','assets','thumbs',`${imageFile}`))
+	await fileExists('thumbs', imageFile)
 	// requested image exists send existing file 
 	.then((response) => {
+		console.log(response)
 		res.sendFile(imageFile, optionsThumbs, async (err) => {
 			if(err) {
 				console.log(err)
