@@ -2,6 +2,7 @@ import { agent as request } from 'supertest';
 import app from '../index';
 import { promises as fs } from 'fs';
 import path from 'path'
+import { doesNotReject } from 'assert';
 
 
 const thumbsDir: string = path.join('.', 'assets', 'thumbs');
@@ -23,8 +24,9 @@ const urlString = (fileName?: string, width?: string, height?: string) => {
   return urlString
 }
 
-// tests api/images endpoint with no file parameter
+// tests api/images endpoint
 describe('Checking API/images endpoint', () => {
+  // tests missing file parameter
   it('handles missing file parameter', (done) => {
     request(app)
       .get(urlString())
@@ -35,11 +37,46 @@ describe('Checking API/images endpoint', () => {
         done();
       })
       .catch((Error) => {
-        Error ? done.fail(Error) : done();
+        done.fail(Error);
       });
   });
 
-  // tests api/images endpoint with invalid file parameter
+  // tests invalid width parameter
+  it('handles invalid width parameter', (done) => {
+    const fileName = 'fjord'
+    const width = '0.1'
+    request(app)
+      .get(urlString(fileName, width))
+      .expect(400)
+      .then(response => {
+        expect(response.text).toBe('Cannot process request, width has to be a positive integer')
+        done()
+      })
+      .catch((Error) => {
+        done.fail(Error)
+      })
+  })
+
+  // test invalid height parameter
+  it('handles invalid height parameter', (done) => {
+    const fileName:string = 'fjord';
+    const height:string = '-9.9'
+    request(app)
+      .get(urlString(fileName, undefined, height))
+      .expect(400)
+      .then((response) => {
+        expect(response.text).toBe('Cannot process request, height has to be a positive integer')
+        done()
+      }
+      )
+      .catch((Error) => {
+        done.fail(Error);
+      })
+  })
+
+  // tests invalid height parameter
+
+  // tests invalid file parameter
   it('handles invalid file name', (done) => {
     const fileName: string = 'nonexistentImage';
     request(app)
@@ -54,6 +91,8 @@ describe('Checking API/images endpoint', () => {
         Error ? done.fail(Error) : done();
       });
   });
+
+  // tests 
 
   // tests api/images to send original image file if no width and no height parameters are given
   it('sends original image file if no width and no height parameters are given in url', (done) => {

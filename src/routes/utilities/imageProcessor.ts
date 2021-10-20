@@ -4,9 +4,12 @@ import { promises as fs } from 'fs';
 import { exit } from 'process';
 import sharp from 'sharp';
 
+const isPositiveInteger = (numString: string) => {
+	const num: number  = Math.floor(Number(numString))
+	return String(num) === numString && num > 0;
+}
+
 const processor = async (req: express.Request, res: express.Response): Promise<void> => {
-	// console.log(`\n\nRequested URL`)
-	// console.log(req.originalUrl);
 	const fileName = req.query.file;
 	const width = req.query.width;
 	const height = req.query.height;
@@ -24,11 +27,25 @@ const processor = async (req: express.Request, res: express.Response): Promise<v
 	
 	console.log(`\nSERVER LOG: ${imageFile} is requested`);
 	
-	//if no file parameter recevied in url return with 400
+	// check if parameters are valid
+	// if no file parameter recevied in url return with 400
 	if(fileName == undefined) {
 		const message = 'Cannot process request, no file parameter in url.';
 		res.status(400).send(message);
 		console.log(`SERVER LOG: ${message}`);
+		return;
+	}
+	// width and height should be undefined or positive integers	
+	if(width != undefined && !isPositiveInteger(width as string)) {
+		const message = 'Cannot process request, width has to be a positive integer'
+		res.status(400).send(message);
+		console.log(`SERVER LOG: ${message}`)
+		return;
+	}
+	if(height != undefined && !isPositiveInteger(height as string)) {
+		const message = 'Cannot process request, height has to be a positive integer'
+		res.status(400).send(message);
+		console.log(`SERVER LOG: ${message}`)
 		return;
 	}
 
@@ -42,7 +59,6 @@ const processor = async (req: express.Request, res: express.Response): Promise<v
 		console.log(`SERVER LOG: ${message}`);
 		return;
 	}
-
 
 	// if there neither width nor height parameters are given return original image
 	if(width == undefined && height == undefined) {
@@ -65,13 +81,12 @@ const processor = async (req: express.Request, res: express.Response): Promise<v
 			try {
 				console.log('SERVER LOG: resizing image...');
 				// resizing image
-				const image =  sharp(path.resolve(__dirname, `${imageDir}`, `${fileName}.jpg`))
-				await image
-				.resize(parseInt(width as string, 10), parseInt(height as string, 10), {
-					fit: 'cover'
-				})
-				// stroing resized image
-				.toFile(outputFile)		
+				await sharp(path.resolve(__dirname, `${imageDir}`, `${fileName}.jpg`))
+					.resize(parseInt(width as string, 10), parseInt(height as string, 10), {
+						fit: 'cover'
+					})
+					// stroing resized image
+					.toFile(outputFile)		
 				//returning resized image
 				res.status(200).sendFile(imageFile, optionsThumbs, async (err) => {
 					if(err) {
@@ -79,10 +94,7 @@ const processor = async (req: express.Request, res: express.Response): Promise<v
 						console.log(`SERVER LOG: ${err}`)
 					}
 					else {
-						// console.log(res)
 						console.log(`SERVER LOG: Created, stored and returned ${imageFile}`)
-						// deleting stored file for testing purposes
-						// await fs.unlink(outputFile);
 
 					}
 				})
