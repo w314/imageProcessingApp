@@ -1,7 +1,7 @@
 import express from 'express'
 import path from 'path';
 import { promises as fs } from 'fs';
-import { exit } from 'process';
+import { exit, nextTick } from 'process';
 import sharp from 'sharp';
 
 const isPositiveInteger = (numString: string) => {
@@ -73,40 +73,48 @@ const processor = async (req: express.Request, res: express.Response): Promise<v
 		return;
 	}
 	
-	// return requested file if exist with the required dimensions
-	res.sendFile(imageFile, optionsThumbs, async (err) => {
-		// if image thumb is missing create and send new image thumb
-		if(err) {
-			console.log(`SERVER LOG: ${fileName}.jpg with width: ${width} and height: ${height} doesn't exists.`);
-			try {
-				console.log('SERVER LOG: resizing image...');
-				// resizing image
-				await sharp(path.resolve(__dirname, `${imageDir}`, `${fileName}.jpg`))
-					.resize(parseInt(width as string, 10), parseInt(height as string, 10), {
-						fit: 'cover'
-					})
-					// stroing resized image
-					.toFile(outputFile)		
-				//returning resized image
-				res.status(200).sendFile(imageFile, optionsThumbs, async (err) => {
-					if(err) {
-						console.log('SERVER LOG: error while sending resized image')
-						console.log(`SERVER LOG: ${err}`)
-					}
-					else {
-						console.log(`SERVER LOG: Created, stored and returned ${imageFile}`)
-
-					}
+	// check if requested image exists
+	await fs.stat(path.join('.','assets','thumbs',`${imageFile}`))
+	// requested image exists send existing file 
+	.then((response) => {
+		res.sendFile(imageFile, optionsThumbs, async (err) => {
+			if(err) {
+				console.log(err)
+			}
+			else {
+				console.log(`SERVER LOG: ${imageFile} already exists, returning existing file.`)
+			}
+		})
+	})
+	// requested image doesn't exists, create and store one
+	.catch(async (err) => {
+		console.log(`SERVER LOG: ${fileName}.jpg with width: ${width} and height: ${height} doesn't exists.`);
+		try {
+			console.log('SERVER LOG: resizing image...');
+			// resizing image
+			await sharp(path.resolve(__dirname, `${imageDir}`, `${fileName}.jpg`))
+				.resize(parseInt(width as string, 10), parseInt(height as string, 10), {
+					fit: 'cover'
 				})
-			}
-			catch  (err) {
-				console.log(`SERVER LOG: ${err}`);
-			}
+				// stroing resized image 
+				.toFile(outputFile)		
+			//returning resized image
+			res.status(200).sendFile(imageFile, optionsThumbs, async (err) => {
+				if(err) {
+					console.log('SERVER LOG: error while sending resized image')
+					console.log(`SERVER LOG: ${err}`)
+				}
+				else {
+					console.log(`SERVER LOG: Created, stored and returned ${imageFile}`)
+
+				}
+			})
 		}
-		else {
-			console.log(`SERVER LOG: ${imageFile} already exists, returning existing file.`)
+		catch  (err) {
+			console.log(`SERVER LOG: ${err}`);
 		}
-	});
+	})
+
 }
 
 export default processor;
