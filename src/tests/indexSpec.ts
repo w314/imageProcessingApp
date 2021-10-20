@@ -6,18 +6,28 @@ import path from 'path'
 
 const thumbsDir: string = path.join('.', 'assets', 'thumbs');
 const endPoint: string = '/api/images'
-const filePath = (fileName: string, width: string, height: string) => {
-  return ''
+const thumbFilePath = (fileName: string, width: string, height: string) => {
+  return path.join(`${thumbsDir}`,`${fileName}_${width}x${height}.jpg` )
 }
 const urlString = (fileName?: string, width?: string, height?: string) => {
-  return `${endPoint}?file=${fileName}&width=${width}&height=${height}`
+  let urlString = `${endPoint}`
+  if (fileName) {
+    urlString += `?file=${fileName}`
+  }
+  if (width) {
+    urlString += `&width=${width}`
+  }
+  if (height) {
+    urlString += `&height=${height}`
+  }
+  return urlString
 }
 
 // tests api/images endpoint with no file parameter
 describe('Checking API/images endpoint', () => {
   it('handles missing file parameter', (done) => {
     request(app)
-      .get(endPoint)
+      .get(urlString())
       .expect(400)
       .expect('Content-Type', 'text/html; charset=utf-8')
       .then((response) => {
@@ -48,9 +58,8 @@ describe('Checking API/images endpoint', () => {
   // tests api/images to send original image file if no width and no height parameters are given
   it('sends original image file if no width and no height parameters are given in url', (done) => {
     const fileName = 'fjord'
-    const urlString: string = `${endPoint}?file=${fileName}`
     request(app)
-      .get(urlString)
+      .get(urlString(fileName))
       .expect(200)
       .end(function(err, res) {
         if (err) {
@@ -66,7 +75,7 @@ describe('Checking API/images endpoint', () => {
     const fileName: string = 'fjord';
     const width: string = '600';
     const height: string = '400';    
-    const testFile = path.join(`${thumbsDir}`, `${fileName}_${width}x${height}.jpg`);
+    const testFile = thumbFilePath(fileName, width, height)
 
     // set-up delete testFile if necessary
     try {
@@ -106,7 +115,8 @@ describe('Checking API/images endpoint', () => {
     const fileName: string = 'palmtunnel';
     const width: string = '300';
     const height: string = '200';    
-    const testFile = path.join(`${thumbsDir}`, `${fileName}_${width}x${height}.jpg`);
+    const testFile = thumbFilePath(fileName, width, height)
+
 
     // check if file to be requested already exists
     await expectAsync(fs.stat(testFile)).toBeResolved()
