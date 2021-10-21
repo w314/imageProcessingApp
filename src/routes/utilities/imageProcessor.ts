@@ -99,14 +99,12 @@ const processor = async (req: express.Request, res: express.Response): Promise<v
 	}
 	
 	// check if requested image exists
-	// await fs.stat(path.join('.','assets','thumbs',`${imageFile}`))
 	await fileExists('thumbs', imageFile)
 	// requested image exists send existing file 
 	.then((response) => {
-		console.log(response)
 		res.sendFile(imageFile, optionsThumbs, async (err) => {
 			if(err) {
-				console.log(err)
+				console.log(`SERVER LOG: ${err}`)
 			}
 			else {
 				console.log(`SERVER LOG: ${imageFile} already exists, returning existing file.`)
@@ -118,12 +116,15 @@ const processor = async (req: express.Request, res: express.Response): Promise<v
 		console.log(`SERVER LOG: ${fileName}.jpg with width: ${width} and height: ${height} doesn't exists.`);
 		try {
 			console.log('SERVER LOG: resizing image...');
+			// convert width and height to number if they are not undefined
+			const resizeWidth = width == undefined ? undefined : parseInt(width as string, 10)
+			const resizeHeight = height == undefined ? undefined : parseInt(height as string, 10)
 			// resizing image
 			await sharp(path.resolve(__dirname, `${imageDir}`, `${fileName}.jpg`))
-				.resize(parseInt(width as string, 10), parseInt(height as string, 10), {
+				.resize(resizeWidth, resizeHeight, {
 					fit: 'cover'
 				})
-				// stroing resized image 
+				// storing resized image 
 				.toFile(outputFile)		
 			//returning resized image
 			res.status(200).sendFile(imageFile, optionsThumbs, async (err) => {
