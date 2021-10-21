@@ -36,7 +36,6 @@ const processor = async (req: express.Request, res: express.Response): Promise<v
 	
 	console.log(`\nSERVER LOG: ${imageFile} is requested`);
 	
-	// check if parameters are valid
 	// if no file parameter recevied in url return with 400
 	if(fileName == undefined) {
 		const message = 'Cannot process request, no file parameter in url.';
@@ -45,21 +44,9 @@ const processor = async (req: express.Request, res: express.Response): Promise<v
 		return;
 	}
 
-	// // if there is no width of height return original image
-	// if(width == undefined && height == undefined) {
-	// 	const message = `No width and height parameters are given, returning original assets/images/${fileName}.jpg`;
-	// 	console.log(`SERVER LOG: ${message}`);
-	// 	res.status(200).sendFile(`${fileName}.jpg`, optionsImages, async (err) => {
-	// 		if (err) {
-	// 			console.log('SERVER LOG: error while sending original image');
-	// 			console.log(`SERVER LOG: ${err}`);
-	// 		}
-	// 	})
-	// 	return;
-	// }
+	// if there are no width and no height parameter return original image
 
-
-
+	
 	// width and height should be undefined or positive integers	
 	if(width != undefined && !isPositiveInteger(width as string)) {
 		const message = 'Cannot process request, width has to be a positive integer'
