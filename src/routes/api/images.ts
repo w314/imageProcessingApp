@@ -1,5 +1,5 @@
 import express from 'express';
-import processor from '../utilities/imageProcessor'
+import processor from '../utilities/imageProcessor';
 
 //create router object
 const images = express.Router();
