@@ -84,7 +84,7 @@ describe('Checking API/images endpoint', () => {
       .expect(404)
       .expect('Content-Type', 'text/html; charset=utf-8')
       .then(response => {
-        expect(response.text).toBe(`Cannot process request, image ${fileName}.jpg does not exist.`);
+        expect(response.text).toBe(`Requested file not found.`);
         done();
       })
       .catch(Error => {
