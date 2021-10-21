@@ -17,13 +17,11 @@ npm start
 
 ## How to use the app
 
-- Open your browser at `http://localhost:3000/api/images
-The project is setup to start with running `index.js` under the `dist` folder. Currently there is no such file and directory running `npm start` throws an error.
-
-Runnig `npm run build` first would create the directory and file to start the app. 
+Open your browser at
 ```shell
-npm run build
-npm start
-
+http://localhost:3000/api/images?file=fjord&width=600&height=400
 ```
+The application will serve you a resized image of fjord.jpg with width 600 and height 400.
+To use different images or width or height parameter change them in the url.
 
+If no width and height parameters are provided the application serves the original image from its directory. If you provide either width or height or both of those parameters the application serves a thumb image resized according the provided parameters. Created thumb images are saved under the thumbs directory and when asking for a previously created thumb images they are served from there and are not recretated.
