@@ -5,7 +5,7 @@ import processor from '../utilities/imageProcessor';
 const images = express.Router();
 
 //set up route
-images.get('/', processor, (req, res) => {
+images.get('/', processor, () => {
   // res.send('Application starting page');
 });
 

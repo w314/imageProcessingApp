@@ -2,10 +2,9 @@ import { agent as request } from 'supertest';
 import app from '../index';
 import { promises as fs } from 'fs';
 import path from 'path';
-import { doesNotReject } from 'assert';
 
 const thumbsDir: string = path.join('.', 'assets', 'thumbs');
-const endPoint: string = '/api/images';
+const endPoint = '/api/images';
 const thumbFilePath = (fileName: string, width: string, height: string) => {
   return path.join(`${thumbsDir}`, `${fileName}_${width}x${height}.jpg`);
 };
@@ -62,8 +61,8 @@ describe('Checking API/images endpoint', () => {
 
   // test invalid height parameter
   it('handles invalid height parameter', (done) => {
-    const fileName: string = 'fjord';
-    const height: string = '-9.9';
+    const fileName = 'fjord';
+    const height = '-9.9';
     request(app)
       .get(urlString(fileName, undefined, height))
       .expect(400)
@@ -82,7 +81,7 @@ describe('Checking API/images endpoint', () => {
 
   // tests invalid file parameter
   it('handles invalid file name', (done) => {
-    const fileName: string = 'nonexistentImage';
+    const fileName = 'nonexistentImage';
     request(app)
       .get(urlString(fileName))
       .expect(404)
@@ -104,7 +103,7 @@ describe('Checking API/images endpoint', () => {
     request(app)
       .get(urlString(fileName))
       .expect(200)
-      .end(function (err, res) {
+      .end(function (err) {
         if (err) {
           done.fail(err);
         } else {
@@ -115,9 +114,9 @@ describe('Checking API/images endpoint', () => {
 
   // tests creating requested new image
   it('creates requested image with requested width and height', async (done) => {
-    const fileName: string = 'fjord';
-    const width: string = '600';
-    const height: string = '400';
+    const fileName = 'fjord';
+    const width = '600';
+    const height = '400';
     const testFile = thumbFilePath(fileName, width, height);
 
     // set-up delete testFile if necessary
@@ -153,9 +152,9 @@ describe('Checking API/images endpoint', () => {
 
   // test requesting already created thumb image
   it('serves image from under thumbs directory if it exists', async () => {
-    const fileName: string = 'palmtunnel';
-    const width: string = '300';
-    const height: string = '200';
+    const fileName = 'palmtunnel';
+    const width = '300';
+    const height = '200';
     const testFile = thumbFilePath(fileName, width, height);
 
     // check if file to be requested already exists

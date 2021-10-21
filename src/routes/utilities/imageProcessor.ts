@@ -1,7 +1,6 @@
 import express from 'express';
 import path from 'path';
 import { promises as fs } from 'fs';
-import { exit, nextTick } from 'process';
 import sharp from 'sharp';
 
 const isPositiveInteger = (numString: string) => {
@@ -11,13 +10,12 @@ const isPositiveInteger = (numString: string) => {
 
 const fileExists = (directory: string, file: string) => {
   const filePath = path.join('.', 'assets', directory, file);
-  return new Promise(async (resolve, reject) => {
-    await fs
-      .stat(filePath)
-      .then((response) => {
+  return new Promise((resolve, reject) => {
+    fs.stat(filePath)
+      .then(() => {
         resolve(true);
       })
-      .catch((err) => {
+      .catch(() => {
         reject();
       });
   });
@@ -76,7 +74,7 @@ const processor = async (
           });
       })
       // invalid file name send error message
-      .catch((err) => {
+      .catch(() => {
         fileNotFound();
       })
       .finally(() => {
@@ -105,7 +103,7 @@ const processor = async (
     // check if requested thumb image already exists
     await fileExists('thumbs', imageFile)
       // requested image exists send existing file
-      .then((response) => {
+      .then(() => {
         res.sendFile(imageFile, optionsThumbs, async (err) => {
           if (err) {
             console.log(`SERVER LOG: Error while sending existing thumb file`);
@@ -118,7 +116,7 @@ const processor = async (
         });
       })
       // requested image doesn't exists, create and store one
-      .catch(async (err) => {
+      .catch(async () => {
         // check if original image to create thumb from exists
         console.log(
           `SERVER LOG: ${fileName}.jpg with width: ${width} and height: ${height} doesn't exists.`
@@ -166,7 +164,7 @@ const processor = async (
             }
           })
           // fileName provided is invalid send error message
-          .catch((err) => {
+          .catch(() => {
             fileNotFound();
           });
       });
