@@ -2,6 +2,7 @@ import { agent as request } from 'supertest';
 import app from '../index';
 import { promises as fs } from 'fs';
 import path from 'path';
+import resizeImage from '../routes/utilities/utilities';
 
 const thumbsDir: string = path.join('.', 'assets', 'thumbs');
 const endPoint = '/api/images';
@@ -21,6 +22,50 @@ const urlString = (fileName?: string, width?: string, height?: string) => {
   }
   return urlString;
 };
+
+const deleteFile = async (filePath: string) => {
+  try {
+    await fs.unlink(filePath);
+    console.log(`TEST: OK, ${filePath} is deleted.`);
+  } catch (err) {
+    // console.log()
+    const errorMessage = (err as Error).message;
+    if (errorMessage.startsWith('ENOENT')) {
+      // console.log(err)
+      console.log(`TEST: OK, tesfile was already missing from directory.`);
+    } else {
+      console.log(`TEST: ${err}`);
+    }
+  }
+
+}
+
+
+// test resizing utility
+describe('Tests resizeImage utility', () => {
+  it('resizes image and saves it under thumbs direcotry', async (done) => {
+    const fileName = 'icelandwaterfall'
+    const width = '400'
+    const height = '300'
+    const testFile: string = thumbFilePath(fileName, width, height)
+    const inputFile: string = path.join('.','assets','images',`${fileName}.jpg`)
+      try {
+      // set-up delete testfile if exists
+      await deleteFile(testFile)
+      // resize image
+      await resizeImage(inputFile, width, height, testFile)
+      // check if image is saved under thumbs directory
+      await expectAsync(fs.stat(testFile)).toBeResolved();
+      // clean-up delete testFile
+      await deleteFile(testFile)
+      done()
+    }
+    catch(err) {
+      console.log(`TEST: ${err}`)
+      done.fail(`${err}`)
+    }
+  })
+})
 
 // tests api/images endpoint
 describe('Checking API/images endpoint', () => {
@@ -120,33 +165,22 @@ describe('Checking API/images endpoint', () => {
     const testFile = thumbFilePath(fileName, width, height);
 
     // set-up delete testFile if necessary
-    try {
-      console.log(`\nTEST: Set-Up: Deleting ${testFile} if exists.`);
-      await fs.unlink(testFile);
-      console.log(`TEST: OK, ${testFile} is deleted.`);
-    } catch (err) {
-      // console.log()
-      const errorMessage = (err as Error).message;
-      if (errorMessage.startsWith('ENOENT')) {
-        // console.log(err)
-        console.log(`TEST: OK, tesfile was already missing from directory.`);
-      } else {
-        console.log(`TEST: ${err}`);
-      }
-    }
+    console.log(`\nTEST: Set-Up: Deleting ${testFile} if exists.`);
+    await deleteFile(testFile)
 
+    // request file 
     await request(app)
       .get(urlString(fileName, width, height))
       .expect(200)
       .expect('Content-Length', '41523');
 
+    // check if file was saved
     await expectAsync(fs.stat(testFile)).toBeResolved();
     console.log(`TEST: Checked, that requested file was saved as ${testFile}`);
 
     // clean-up: delete created testFile
-    await fs.unlink(testFile);
-    console.log(`TEST: ${testFile} was deleted to clean up.`);
-
+    console.log(`TEST: delete ${testFile} to clean up.`);
+    await deleteFile(testFile)
     done();
   });
 
