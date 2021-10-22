@@ -2,6 +2,8 @@ import express from 'express';
 import path from 'path';
 import { promises as fs } from 'fs';
 import sharp from 'sharp';
+import resizeImage  from './utilities';
+import { pathToFileURL } from 'url';
 
 const isPositiveInteger = (numString: string) => {
   const num: number = Math.floor(Number(numString));
@@ -127,22 +129,24 @@ const processor = async (
           .then(async () => {
             try {
               console.log('SERVER LOG: resizing image...');
-              // convert width and height to number if they are not undefined
-              const resizeWidth =
-                width == undefined ? undefined : parseInt(width as string, 10);
-              const resizeHeight =
-                height == undefined
-                  ? undefined
-                  : parseInt(height as string, 10);
+			  const imagePath = path.resolve(__dirname,`${imageDir}`, `${fileName}.jpg`)
+			  await resizeImage(imagePath, width as string, height as string, outputFile)
+            //   convert width and height to number if they are not undefined
+            //   const resizeWidth =
+            //     width == undefined ? undefined : parseInt(width as string, 10);
+            //   const resizeHeight =
+            //     height == undefined
+            //       ? undefined
+            //       : parseInt(height as string, 10);
               // resizing image
-              await sharp(
-                path.resolve(__dirname, `${imageDir}`, `${fileName}.jpg`)
-              )
-                .resize(resizeWidth, resizeHeight, {
-                  fit: 'cover',
-                })
-                // storing resized image
-                .toFile(outputFile);
+            //   await sharp(
+            //     path.resolve(__dirname, `${imageDir}`, `${fileName}.jpg`)
+            //   )
+            //     .resize(resizeWidth, resizeHeight, {
+            //       fit: 'cover',
+            //     })
+            //     // storing resized image
+            //     .toFile(outputFile);
               //returning resized image
               res
                 .status(200)
@@ -168,7 +172,7 @@ const processor = async (
             fileNotFound();
           });
       });
+	  };
   }
-};
 
 export default processor;
