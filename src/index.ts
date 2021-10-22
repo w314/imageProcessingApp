@@ -7,7 +7,10 @@ import routes from './routes/index';
 const app = express();
 const port = 3000;
 
+// const middleware = [morgan, routes]
+
 //setup your app to use the router
+app.use(morgan('dev'));
 app.use('/api', routes);
 
 //start the server
